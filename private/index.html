@@ -1,0 +1,1789 @@
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://player.vimeo.com">
+<link rel="preconnect" href="https://vimeo.com">
+<link rel="preconnect" href="https://f.vimeocdn.com">
+<link rel="preconnect" href="https://fresnel.vimeocdn.com">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#0a0a0a;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding:6px;}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+@media(max-width:600px){
+  .grid{grid-template-columns:1fr!important;}
+  .item.span-full .thumb-wrap{aspect-ratio:16/9;height:auto!important;}
+}
+.item{position:relative;cursor:pointer;border-radius:4px;overflow:hidden;background:#181818;
+  transition:opacity .65s cubic-bezier(.16,1,.3,1),transform .65s cubic-bezier(.16,1,.3,1);}
+.item.span-full{grid-column:1/-1;}
+.item.span-full .thumb-wrap{aspect-ratio:unset;height:var(--span-h,240px);}
+.thumb-wrap{overflow:hidden;position:relative;aspect-ratio:16/9;transition:max-height .4s cubic-bezier(.4,0,.2,1);}
+.brick-img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .6s cubic-bezier(.25,.46,.45,.94),opacity 1.8s cubic-bezier(.25,.46,.45,.94);}
+.item:hover .brick-img,.item.touch-active .brick-img{transform:scale(1.04);}
+.item.reel-active .brick-img{opacity:0;transition:transform .6s cubic-bezier(.25,.46,.45,.94),opacity .3s cubic-bezier(.25,.46,.45,.94);}
+.hover-video{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .45s cubic-bezier(.25,.46,.45,.94);pointer-events:none;}
+.item:hover .hover-video,.item.touch-active .hover-video{opacity:1;}
+.item.reel-active .hover-video{opacity:1;transition:none;}
+.brick-overlay{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0);transition:background .45s cubic-bezier(.25,.46,.45,.94);display:flex;align-items:flex-end;padding:14px;pointer-events:none;}
+.item:hover .brick-overlay,.item.touch-active .brick-overlay{background:rgba(0,0,0,0.20);}
+.brick-info{opacity:0;transform:translateY(5px);transition:opacity .45s cubic-bezier(.25,.46,.45,.94),transform .45s cubic-bezier(.25,.46,.45,.94);}
+.item:hover .brick-info,.item.touch-active .brick-info{opacity:1;transform:translateY(0);}
+.brick-title{color:#fff;font-size:13px;font-weight:500;line-height:1.3;}
+.brick-client{color:rgba(255,255,255,.45);font-size:11px;margin-top:2px;}
+#vp{position:sticky;top:0;z-index:200;width:100%;background:#0a0a0a;opacity:0;transform:translateY(-12px);pointer-events:none;max-height:0;overflow:hidden;transition:opacity .55s cubic-bezier(.16,1,.3,1),transform .55s cubic-bezier(.16,1,.3,1);}
+body.vp-open{overflow:hidden;}
+#vp.vp-visible{max-height:none;overflow:visible;}
+#vp.open{opacity:1;transform:translateY(0);pointer-events:all;}
+#vp-pl{position:relative;width:100%;background:#000;}
+#vp-pl iframe{position:absolute;inset:0;width:100%;height:100%;border:none;}
+#vp-pl.gallery-mode{background:none;}
+.vp-video-wrap{position:relative;width:100%;padding-bottom:56.25%;}
+.vp-video-wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:none;}
+#vp-gallery{display:grid;gap:6px;padding:6px 0;}
+#vp-gallery img{width:100%;display:block;object-fit:cover;cursor:zoom-in;transition:opacity .2s;}
+#vp-gallery img:hover{opacity:.85;}
+#vp-info{padding:16px 22px 22px;}
+#vp-info .hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;}
+#vp-info .ttl{font-size:20px;font-weight:500;color:#e8e8e8;line-height:1.2;}
+#vp-info .cli{font-size:13px;color:#555;margin-top:4px;}
+#vp-info .xbtn{background:none;border:1px solid #444;color:#aaa;width:28px;height:28px;border-radius:50%;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-left:14px;transition:border-color .2s,color .2s,transform .3s;}
+#vp-info .xbtn:hover{border-color:#888;color:#eee;transform:rotate(90deg);}
+#vp-info .meta{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:12px;}
+#vp-info .ml{font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:#444;margin-bottom:3px;}
+#vp-info .mv{font-size:13px;color:#888;}
+#vp-info .desc{font-size:13px;line-height:1.3;color:#888;margin-bottom:16px;}
+#vp-info .crl{font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:#2e2e2e;margin-bottom:10px;padding-bottom:7px;border-bottom:1px solid #1a1a1a;}
+#vp-info .crs{display:flex;flex-wrap:wrap;gap:12px 32px;}
+#vp-info .crr{font-size:11px;color:#444;margin-bottom:2px;}
+#vp-info .crn{font-size:13px;color:#888;}
+.grid.dimmed{opacity:.2;pointer-events:none;transition:opacity .55s cubic-bezier(.16,1,.3,1);}
+#filters{display:flex;gap:18px;flex-wrap:wrap;padding:0 6px 5px 6px;align-items:flex-end;}
+#filters.compact{flex-wrap:nowrap;gap:11px;overflow:hidden;}
+#filters.compact .f-btn{font-size:13px;white-space:nowrap;}
+.f-btn{font-size:15px;padding:0;border:none;background:none;color:#fff;cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;transition:color .2s,opacity .2s;letter-spacing:.03em;opacity:.45;font-weight:400;}
+.f-btn:hover{opacity:.7;}
+.f-btn.active{opacity:1;color:#fff;}
+.f-btn.f-contact{margin-left:auto;}
+#contact-screen{position:sticky;top:0;z-index:100;width:100%;display:none;overflow:hidden;background:#0a0a0a;border-radius:4px;opacity:0;transition:opacity .45s cubic-bezier(.16,1,.3,1);}
+#contact-screen.active{display:block;}
+#contact-screen.visible{opacity:1;}
+body.contact-open{overflow:hidden;}
+#contact-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;background:#0a0a0a;}
+#contact-screen::after{content:"";position:absolute;inset:0;background:rgba(0,0,0,.4);z-index:1;pointer-events:none;}
+#contact-name{position:absolute;top:9%;left:5.5%;z-index:2;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;}
+#contact-name .cn-name{font-size:30px;font-weight:500;letter-spacing:-.01em;color:#fff;line-height:1.1;}
+#contact-name .cn-role{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.55);margin-top:8px;}
+#contact-bio{position:absolute;bottom:8%;left:5.5%;z-index:2;max-width:437px;font-size:14px;line-height:1.65;color:rgba(255,255,255,.82);white-space:pre-line;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;}
+#contact-links{position:absolute;bottom:8%;right:5.5%;z-index:2;display:flex;flex-direction:column;gap:10px;text-align:right;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;}
+.contact-link{font-size:18px;color:#fff;text-decoration:none;opacity:.62;transition:opacity .25s;letter-spacing:.02em;font-weight:400;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;}
+.contact-link:hover{opacity:1;}
+#contact-screen.mobile{display:flex;flex-direction:column;height:auto !important;}
+#contact-screen.mobile #contact-name{position:relative;top:auto;left:auto;right:auto;bottom:auto;z-index:2;text-align:left;padding:48px 22px 24px;}
+#contact-screen.mobile #contact-name .cn-name{font-size:24px;}
+#contact-screen.mobile #contact-bio{position:relative;top:auto;left:auto;right:auto;bottom:auto;z-index:2;margin:auto 0;padding:24px 22px;max-width:none;text-align:left;font-size:13px;}
+#contact-screen.mobile #contact-links{position:relative;top:auto;left:auto;right:auto;bottom:auto;z-index:2;align-items:flex-end;text-align:right;gap:8px;padding:24px 22px 42px;}
+#contact-screen.mobile .contact-link{font-size:16px;}
+#lb-bg{position:absolute;left:0;top:0;width:100%;height:100%;z-index:9998;background:rgba(0,0,0,0);pointer-events:none;transition:background .35s ease;}
+#lb-bg.open{background:rgba(0,0,0,.5);pointer-events:all;}
+body.lb-open #vp{filter:brightness(.78);transition:filter .35s ease;}
+body:not(.lb-open) #vp{filter:brightness(1);transition:filter .35s ease;}
+body.lb-open #vp-gallery{opacity:.35;transition:opacity .35s ease;}
+body:not(.lb-open) #vp-gallery{opacity:1;transition:opacity .35s ease;}
+body.lb-open #photo-grid{filter:brightness(.56);transition:filter .35s ease;}
+body:not(.lb-open) #photo-grid{filter:brightness(1);transition:filter .35s ease;}
+#lb{position:absolute;left:0;top:0;width:100%;height:100vh;z-index:9999;display:flex;align-items:center;justify-content:center;pointer-events:none;}
+#lb.open{pointer-events:all;}
+#lb-img{max-width:calc(100% - 120px);object-fit:contain;opacity:0;transform:scale(.95);transition:opacity .45s cubic-bezier(.16,1,.3,1),transform .45s cubic-bezier(.16,1,.3,1);display:block;border-radius:2px;box-shadow:0 8px 48px rgba(0,0,0,.6);}
+#lb.open #lb-img{opacity:1;transform:scale(1);}
+#lb-close{position:absolute;top:18px;right:22px;background:none;border:none;color:#fff;font-size:22px;cursor:pointer;opacity:0;transition:opacity .2s,transform .3s;padding:6px;line-height:1;pointer-events:none;}
+#lb.open #lb-close{opacity:.5;pointer-events:all;}
+#lb-close:hover{opacity:1 !important;transform:rotate(90deg);}
+#lb-prev,#lb-next{position:absolute;top:50%;transform:translateY(-50%);background:none;border:none;color:#fff;font-size:42px;cursor:pointer;padding:16px 22px;opacity:0;transition:opacity .2s;user-select:none;line-height:1;font-weight:200;pointer-events:none;display:block;}
+#lb-prev{left:0;}#lb-next{right:0;}
+#lb.open.multi #lb-prev,#lb.open.multi #lb-next{opacity:.35;pointer-events:all;}
+#lb-prev:hover,#lb-next:hover{opacity:.85 !important;}
+#lb-counter{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.3);font-size:11px;letter-spacing:.12em;display:block;opacity:0;}
+#lb.open.multi #lb-counter{opacity:1;}
+.grid{visibility:hidden;height:0;overflow:hidden;opacity:0;transition:opacity .6s ease;}
+#filters{visibility:hidden;height:0;overflow:hidden;opacity:0;transition:opacity .6s ease;}
+#photo-grid{display:none;grid-template-columns:repeat(3,1fr);grid-auto-rows:4px;gap:6px;grid-auto-flow:dense;width:100%;}
+#photo-grid.active{display:grid;}
+.photo-cell{position:relative;overflow:hidden;border-radius:4px;}
+.photo-cell.wide-2{grid-column:span 2;}
+.photo-cell.wide-3{grid-column:span 3;}
+.photo-cell img{width:100%;height:auto;display:block;cursor:zoom-in;}
+.photo-cell:hover img{filter:brightness(.85);}
+#photo-loading{grid-column:1 / -1;text-align:center;padding:80px 20px;color:#666;font-size:13px;letter-spacing:.5px;}
+#pl-screen{width:100%;min-height:500px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:#0a0a0a;transition:opacity .4s ease;}
+#pl-screen.done{display:none;}
+.pl-ring{width:44px;height:44px;border:2px solid rgba(255,255,255,.12);border-top-color:rgba(255,255,255,.85);border-radius:50%;animation:pl-spin .8s linear infinite;}
+.pl-ver{font-size:10px;color:rgba(255,255,255,.28);letter-spacing:.14em;font-family:monospace;text-transform:uppercase;}
+@keyframes pl-spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+</style>
+
+<div id="pl-screen"><div class="pl-ring"></div></div>
+<div id="vp">
+  <div id="vp-pl"></div>
+  <div id="vp-info">
+    <div class="hdr">
+      <div><div class="ttl" id="vp-ttl"></div><div class="cli" id="vp-cli"></div></div>
+      <button class="xbtn" id="vp-x">&#x2715;</button>
+    </div>
+    <div class="meta" id="vp-meta"></div>
+    <div class="desc" id="vp-desc"></div>
+    <div class="crl" id="vp-crl" style="display:none">Съёмочная группа</div>
+    <div class="crs" id="vp-crs"></div>
+  </div>
+</div>
+<div id="filters"></div>
+<div class="grid" id="grid"></div>
+<div id="photo-grid"></div>
+<div id="contact-screen"><video id="contact-bg" muted loop playsinline preload="auto"></video><div id="contact-name"><div class="cn-name"></div><div class="cn-role"></div></div><div id="contact-bio"></div><div id="contact-links"></div></div>
+<div id="lb-bg"></div>
+<div id="lb">
+  <button id="lb-close">&#x2715;</button>
+  <button id="lb-prev">&#x2039;</button>
+  <img id="lb-img" src="" alt="">
+  <button id="lb-next">&#x203a;</button>
+  <div id="lb-counter"></div>
+</div>
+
+<script>
+var COLS=3,GAP=6,ANIM=650;
+var CAT_COLS={"Film":1,"Commercial":3,"Music":1};
+var CONTACT_DATA={"name":"Kirill Matveev","role":"Cinematographer","bio":"Kirill grew up in the Urals and entered cinematography through skateboarding, developing an early fascination with camera movement, low angles and dynamic handheld work. His years at a steel mill laid the foundation of his visual language: contrast, low-key lighting, the warm glow of molten metal, grain, and textured portraiture.\nA graduate of Moscow Film School, Kirill works across commercials, brand films, music videos and narrative cinema — wherever the image becomes part of the storytelling.\n\nHe has collaborated with VK, Microsoft, Sber, MegaFon, Wildberries, Smartavia, OSTIN, Jacobs and other brands.\nThe short film Sinitsa (dir. Anton Karavaev) was screened at the Moscow International Film Festival and received the Best Debut award at the Luchezarny Angel Film Festival. Kirill’s commercial work has been shortlisted at the Silver Mercury, while his music videos have won prizes at European music video festivals.","bgMp4":"https://video.wixstatic.com/video/56df72_431c784e320a43fbb5262e91cb5b69f0/1080p/mp4/file.mp4","links":[{"label":"+79817874898","url":"tel:79817874898"},{"label":"Telegram","url":"https://t.me/Matveevkirill"},{"label":"Vimeo","url":"https://vimeo.com/matveevkirill"},{"label":"matveev.k93@gmail.com","url":"mailto:matveev.k93@gmail.com"}]};
+var PHOTOS=["https://static.wixstatic.com/media/56df72_e65adbbaadce45fcbbecbf11c6c4b04e~mv2.jpeg","https://static.wixstatic.com/media/56df72_7389e53209844aa8ade5487ddb473d80~mv2.jpeg","https://static.wixstatic.com/media/56df72_e8e8d9dc80854b1bb8de35aa7756c10b~mv2.jpeg","https://static.wixstatic.com/media/56df72_460080a9f3134cdf94723f066e3a4816~mv2.jpeg","https://static.wixstatic.com/media/56df72_6829a8f0fd844b5da1e66526556d5400~mv2.jpeg","https://static.wixstatic.com/media/56df72_0c0c4dde17634b42a8e5f4ada3ff1cb1~mv2.jpeg","https://static.wixstatic.com/media/56df72_8f0296eaed85478fab11cbb65ea4e72b~mv2.jpeg","https://static.wixstatic.com/media/56df72_8faf41dc59d54f469d6de3b029414138~mv2.jpeg","https://static.wixstatic.com/media/56df72_f87d0617042d4239b85945eb4e31a160~mv2.jpeg","https://static.wixstatic.com/media/56df72_dc53f7f6ed99467d897aef4511c1f740~mv2.jpg","https://static.wixstatic.com/media/56df72_467f64c1250c414381699369e9506f63~mv2.jpg","https://static.wixstatic.com/media/56df72_83df9acb896641d0be8d9f6ec2d9485b~mv2.jpeg","https://static.wixstatic.com/media/56df72_5106805266cc4e74bfd774284913be06~mv2.jpg","https://static.wixstatic.com/media/56df72_c20ae1cd987646d4bd65b06b72ed736a~mv2.jpg","https://static.wixstatic.com/media/56df72_7a6799d262dd40d2852b5ff6cddf0ff6~mv2.jpg","https://static.wixstatic.com/media/56df72_c6218acaaee9465b8397bdd468ee33bc~mv2.jpg","https://static.wixstatic.com/media/56df72_9e1f9f9fc0904b5fa4c8764e954099e1~mv2.jpg","https://static.wixstatic.com/media/56df72_8978280a202147f082455092bb657e2e~mv2.jpg","https://static.wixstatic.com/media/56df72_fa933e8a158743ca84d63dc4418dd068~mv2.jpg","https://static.wixstatic.com/media/56df72_342cf44909c94500b925888a07184c15~mv2.jpg","https://static.wixstatic.com/media/56df72_ab54fe3150fd4576bd30d21b8211663a~mv2.jpg","https://static.wixstatic.com/media/56df72_1d608dd4a75a4afd981ecd47437ce764~mv2.jpeg","https://static.wixstatic.com/media/56df72_eb48c39cf2074e3eb59528c6ef169d51~mv2.jpg","https://static.wixstatic.com/media/56df72_d95070e36788445aba4fa86c58aff1a5~mv2.jpg","https://static.wixstatic.com/media/56df72_d775aeef218844f4a3dc719b07e5a73a~mv2.jpeg","https://static.wixstatic.com/media/56df72_6090d8e5744d4769a81b4ff8e9c50c6b~mv2.jpeg"];
+var videos=[
+  {
+    vimeoId:"https://vimeo.com/1154694175",
+    title:"Kirill Matveev | Cinematography reel",
+    client:"",
+    ratio:56.25,
+    year:"2026",
+    format:"",
+    desc:"",
+    mp4:"https://video.wixstatic.com/video/56df72_3a868f6f76e647838e8b5021e960b3a2/720p/mp4/file.mp4",
+    customThumb:"https://static.wixstatic.com/media/56df72_396eb0b1306b466fb655cd1bf36ca0de~mv2.jpg",
+    gallery:[],
+    galleryCols:2,
+    spanFull:true,
+    spanHeight:"400",
+    hideOnExpand:true,
+    hiddenFromGrid:false,
+    hideOnMain:false,
+    categories:["All"],
+    slug:"reel",
+    credits:[
+
+    ]
+  },
+  {
+    vimeoId:"https://vimeo.com/1153993318",
+    title:"Слепые Зоны | Трейлер",
+    client:"",
+    ratio:null,
+    year:"2026",
+    format:"К/М",
+    desc:"История одинокого сотрудника центра видеонаблюдения, который через городские камеры наблюдает за уличной собакой",
+    mp4:"https://video.wixstatic.com/video/56df72_e3206249f2714b0981226adae496388d/1080p/mp4/file.mp4",
+    customThumb:"https://static.wixstatic.com/media/56df72_1ec76565e0554695bbb7c6ac2424cf27~mv2.jpg",
+    gallery:["https://static.wixstatic.com/media/56df72_b27e863aec95467387397f015150d5c9~mv2.jpeg","https://static.wixstatic.com/media/56df72_e4b0d8fb789d4d0e9e5343f324da1cec~mv2.jpeg","https://static.wixstatic.com/media/56df72_aa5f668862f74122a6b87135bbf7eece~mv2.jpeg","https://static.wixstatic.com/media/56df72_7fddaab7025547008f9b24f149d79f23~mv2.jpeg","https://static.wixstatic.com/media/56df72_b4e792061ebb4df2bedc74228ca20cd2~mv2.jpeg","https://static.wixstatic.com/media/56df72_4a68f9814b5e4dd6b9ada7a97d968fb5~mv2.jpeg","https://static.wixstatic.com/media/56df72_70f108c3044147f585fac67a05fc32be~mv2.jpeg","https://static.wixstatic.com/media/56df72_4b1c3f9a205646cb9f4856a917f00ad0~mv2.jpeg","https://static.wixstatic.com/media/56df72_831d90b2d6104363adb1bd81cecc2b12~mv2.jpeg","https://static.wixstatic.com/media/56df72_6733123ca540426dbc0e504469fd1d46~mv2.jpeg","https://static.wixstatic.com/media/56df72_328524e38a544b468fe0ea7f54220b83~mv2.jpeg","https://static.wixstatic.com/media/56df72_762707f5a0ed46c6926756bf737ea3c0~mv2.jpeg"],
+    galleryCols:4,
+    spanFull:false,
+    spanHeight:"",
+    hideOnExpand:false,
+    hiddenFromGrid:false,
+    hideOnMain:false,
+    categories:["Film","All"],
+    slug:"blind_zones",
+    credits:[
+      {role:"Режиссёр",name:"Антон Караваев"},
+      {role:"Оператор",name:"Кирилл Матвеев"},
+      {role:"Продюсеры",name:"Антон Караваев, Александр Коляденко, Анна Килимник"},
+      {role:"Художник-постановщик",name:"Мария Сафронова"},
+      {role:"Второй Режиссер",name:"Василиса Левыкина"},
+      {role:"Колорист",name:"Илья Иванов"}
+    ]
+  },
+  {
+    vimeoId:"",
+    title:"Папа, который живет на крыше",
+    client:"",
+    ratio:null,
+    year:"2026",
+    format:"",
+    desc:"Иногда папа не уходит. Он просто переезжает на крышу.  История про бывшего заключённого, который выходит из тюрьмы и вынужден переодеться в костюм Карлсона, чтобы общаться со своим сыном",
+    mp4:"https://video.wixstatic.com/video/56df72_9a3f66b3199c446dbac91f5bf6dadb7f/1080p/mp4/file.mp4",
+    customThumb:"https://static.wixstatic.com/media/56df72_4935389129c44068880d5ce6cecbd198~mv2.jpg",
+    gallery:["https://static.wixstatic.com/media/56df72_733fc48b1f8d4947a0761f672afa0cf6~mv2.jpeg","https://static.wixstatic.com/media/56df72_168654b1529947c9967193a1c1128c5d~mv2.jpeg","https://static.wixstatic.com/media/56df72_a234edd4d0a14977b02978096203074e~mv2.jpeg","https://static.wixstatic.com/media/56df72_b653b1509f294dd19c9239b84260e519~mv2.jpeg","https://static.wixstatic.com/media/56df72_cb2b5fa80ac94626bce9ee0baa9015b8~mv2.jpeg","https://static.wixstatic.com/media/56df72_e2200bde1a5f4f0cbbcc50df07363b17~mv2.jpeg","https://static.wixstatic.com/media/56df72_223453c646b94392b9e7d92aba3236df~mv2.jpeg","https://static.wixstatic.com/media/56df72_b53c135d83324ed8a299eadaaa7a5f19~mv2.jpeg","https://static.wixstatic.com/media/56df72_c23c24ae5cb5495e86825eeaa2e96f1d~mv2.jpeg","https://static.wixstatic.com/media/56df72_74d9653545174ca8bd45c196d61505e6~mv2.jpeg","https://static.wixstatic.com/media/56df72_04f50496328b42a8b46d4ca42217ab64~mv2.jpeg","https://static.wixstatic.com/media/56df72_f7cc0e01e3a842a28b0ba7e742ac4580~mv2.jpeg"],
+    galleryCols:3,
+    spanFull:false,
+    spanHeight:"",
+    hideOnExpand:false,
+    hiddenFromGrid:false,
+    hideOnMain:false,
+    categories:["Film","All"],
+    slug:"papa",
+    credits:[
+      {role:"Режиссёр",name:"Матвей Кипнис"},
+      {role:"Продюсеры",name:"Матвей Кипнис, Олег Шваргалов, Карина Божемская"},
+      {role:"Оператор-постановщик",name:"Кирилл Матвеев"},
+      {role:"Вторые режиссёры",name:"София Григорьева, Кристина Сажнова"},
+      {role:"Художник-постановщик",name:"Ольга Никитина"},
+      {role:"Цветокоррекция",name:"Платон Лагутин"}
+    ]
+  },
+  {
+    vimeoId:"",
+    title:"Синица",
+    client:"",
+    ratio:56.25,
+    year:"2025",
+    format:"Film",
+    desc:"Главному инженеру небольшого подсобно-ремонтного предприятия в бывшем бомбоубежище крайне необходимо попасть в роддом к своей беременной жене, но молодой стажёр случайно закрыл единственный выход\n\nПРЕМЬЕРА ММКФ 2025 В КАТЕГОРИИ \"НОВЫЙ РУССКИЙ\"\nПОБЕДИТЕЛЬ В КАТЕГОРИИ \"ЛУЧШИЙ ДЕБЮТ\" В ФЕСТИВАЛЕ \"ЛУЧЕЗАРНЫЙ АНГЕЛ\"",
+    mp4:"https://video.wixstatic.com/video/56df72_1bc82a60c2c54efdaa855e8afe3415ad/1080p/mp4/file.mp4",
+    customThumb:"https://static.wixstatic.com/media/56df72_45569733894a43b0b20dd17b11910267~mv2.jpg",
+    gallery:["https://static.wixstatic.com/media/56df72_ac41e267a2414292b5a733a73b2d2483~mv2.jpg","https://static.wixstatic.com/media/56df72_9d3d110cfaf34cdb8a6de656888f894f~mv2.jpg","https://static.wixstatic.com/media/56df72_383ae436089845259115f24d47d79b77~mv2.jpg","https://static.wixstatic.com/media/56df72_3dee12c8c96245ca88106503c0349a8f~mv2.jpg","https://static.wixstatic.com/media/56df72_409c2f68941449f7bf7d342cc61096a2~mv2.jpg","https://static.wixstatic.com/media/56df72_e3977a9f4755439d9fd3c7b9bce7c3ae~mv2.jpg","https://static.wixstatic.com/media/56df72_001b19f43704468b963fb5e417fb004e~mv2.jpg","https://static.wixstatic.com/media/56df72_286ebbe0d8f74d7eb0725506fcc945b1~mv2.jpg","https://static.wixstatic.com/media/56df72_7f2463294bbb4605b4323f11faa97d2a~mv2.jpg","https://static.wixstatic.com/media/56df72_d8ed5439957f471faf49c01daf70a826~mv2.jpg","https://static.wixstatic.com/media/56df72_2fa0f7b7a2124327a0424d3f8a62e881~mv2.jpg","https://static.wixstatic.com/media/56df72_119fe0561e264661af6ba4c27cd12e94~mv2.jpg"],
+    galleryCols:3,
+    spanFull:false,
+    spanHeight:"",
+    hideOnExpand:false,
+    hiddenFromGrid:false,
+    hideOnMain:false,
+    categories:["Film","All"],
+    slug:"sinica",
+    credits:[
+      {role:"Режиссёр",name:"Антон Караваев"},
+      {role:"Продюсеры",name:"Михаил Королев, Александр Коляденко"},
+      {role:"Оператор-постановщик",name:"Кирилл Матвеев"},
+      {role:"Художник-постановщик",name:"Екатерина Больших"},
+      {role:"Второй Режиссер",name:"Дарья Акимова"},
+      {role:"Колорист",name:"Илья Иванов"}
+    ]
+  },
+  {
+    vimeoId:"https://vimeo.com/1147790565",
+    title:"Jacobs Monarch 3 в одном",
+    client:"Jacobs Monarch",
+    ratio:42.55,
+    year:"2025",
+    format:"Commercial",
+    desc:"",
+    mp4:"https://video.wixstatic.com/video/56df72_f46c86872ab4435d8e0cff9fec23cc24/1080p/mp4/file.mp4",
+    customThumb:"https://static.wixstatic.com/media/56df72_84989c946baf4ceeb0d61cd56bc8eba4~mv2.jpg",
+    gallery:[],
+    galleryCols:2,
+    spanFull:false,
+    spanHeight:"",
+    hideOnExpand:false,
+    hiddenFromGrid:false,
+    hideOnMain:false,
+    categories:["Commercial","All"],
+    slug:"jacobs",
+    credits:[
+      {role:"Продакшн",name:"Smoke Machine"},
+      {role:"Режиссёр / продюсер",name:"Антон Караваев"},
+      {role:"Оператор",name:"Кирилл Матвеев"},
+      {role:"Колорист",name:"Виктор Полтавец"}
+    ]
+  },
+  {
+    vimeoId:"https://vimeo.com/1054437544/9ab2248f30?fl=ip&fe=ec",
+    title:"ВДНХ",
+    client:"",
+    ratio:56.25,
+    year:"",
+    format:"Commercial",
+    desc:"",
+    mp4:"https://video.wixstatic.com/video/56df72_7cfcf65424f343da99568d8089e1a904/1080p/mp4/file.mp4",
+    customThumb:"https://static.wixstatic.com/media/56df72_5b994e40478a48248ab9b70807bbb860~mv2.jpeg",
+    gallery:[],
+    galleryCols:2,
+    spanFull:false,
+    spanHeight:"",
+    hideOnExpand:false,
+    hiddenFromGrid:false,
+    hideOnMain:false,
+    categories:["Commercial","All"],
+    slug:"vdnh",
+    credits:[
+      {role:"Продакшн",name:"Overlap"},
+      {role:"Генеральный продюсер",name:"Дмитрий Сухов"},
+      {role:"Режиссер",name:"Дмитрий Хахуза"},
+      {role:"Оператор-постановщик",name:"Кирилл Матвеев"},
+      {role:"Худдожник-постановщик",name:"Дарья Солдатова"},
+      {role:"Колорист",name:"Андрей Гарный"}
+    ]
+  },
+  {
+    vimeoId:"https://vimeo.com/574046035",
+    title:"VK Donut",
+    client:"VK",
+    ratio:56.25,
+    year:"2022",
+    format:"Commercial",
+    desc:"",
+    mp4:"https://video.wixstatic.com/video/56df72_1f955788bd484071b2c3e6723e22ef5f/1080p/mp4/file.mp4",
+    customThumb:"https://static.wixstatic.com/media/56df72_9a39e39aa8244a6b980cf743b5222a0a~mv2.jpg",
+    gallery:[],
+    galleryCols:2,
+    spanFull:false,
+    spanHeight:"",
+    hideOnExpand:false,
+    hiddenFromGrid:false,
+    hideOnMain:false,
+    categories:["Commercial","All"],
+    slug:"vk_donut",
+    credits:[
+      {role:"Продакшн",name:"Silan Production"},
+      {role:"Режиссёр",name:"Александр Силантьев"},
+      {role:"Оператор",name:"Кирилл Матвеев"},
+      {role:"Продюсер",name:"Тая Комарова"},
+      {role:"Художник-постановщик",name:"Юлия Орлова"}
+    ]
+  },
+  {
+    vimeoId:"https://vimeo.com/935422270",
+    title:"Мегафон",
+    client:"Мегафон",
+    ratio:56.25,
+    year:"2024",
+    format:"Commercial",
+    desc:"",
+    mp4:"https://video.wixstatic.com/video/56df72_fbddbd5ae6284662947ed5a0a7e303bd/1080p/mp4/file.mp4",
+    customThumb:"https://static.wixstatic.com/media/56df72_1e6b895f9f4b4e22ae783a825dc9df88~mv2.jpg",
+    gallery:[],
+    galleryCols:2,
+    spanFull:false,
+    spanHeight:"",
+    hideOnExpand:false,
+    hiddenFromGrid:false,
+    hideOnMain:false,
+    categories:["Commercial","All"],
+    slug:"megafon",
+    credits:[
+      {role:"Режиссёр",name:"Антон Караваев"},
+      {role:"Оператор",name:"Кирилл Матвеев"},
+      {role:"Продакшн",name:"Smoke Machine"}
+    ]
+  },
+  {
+    vimeoId:"https://vimeo.com/457258858?fl=ip&fe=ec",
+    title:"Princess of Sand",
+    client:"",
+    ratio:56.25,
+    year:"",
+    format:"Fashion",
+    desc:"",
+    mp4:"https://video.wixstatic.com/video/56df72_402d9c7950744a149b2e5e3ed18dcd20/1080p/mp4/file.mp4",
+    customThumb:"https://static.wixstatic.com/media/56df72_67dd618d2cd0407c9ff963fcf3f8f9cf~mv2.jpg",
+    gallery:[],
+    galleryCols:2,
+    spanFull:false,
+    spanHeight:"",
+    hideOnExpand:false,
+    hiddenFromGrid:false,
+    hideOnMain:false,
+    categories:["Commercial"],
+    slug:"princess_of_sand",
+    credits:[
+      {role:"Режиссёр",name:"Александр Силантьев"},
+      {role:"Оператор-постановщик",name:"Кирилл Матвеев"}
+    ]
+  },
+  {
+    vimeoId:"https://vimeo.com/1174313839?fl=ip&fe=ec",
+    title:"SmartAvia",
+    client:"SmartAvia - Дополнительные услуги на борту",
+    ratio:null,
+    year:"2026",
+    format:"TV Commercial",
+    desc:"",
+    mp4:"https://video.wixstatic.com/video/56df72_31ea1b3d9bec4dcc810ce85afa02c899/1080p/mp4/file.mp4",
+    customThumb:"https://static.wixstatic.com/media/56df72_f0c13534df9f46b7aa0596b4ebd86adb~mv2.jpg",
+    gallery:[],
+    galleryCols:2,
+    spanFull:false,
+    spanHeight:"",
+    hideOnExpand:false,
+    hiddenFromGrid:false,
+    hideOnMain:false,
+    categories:["Commercial","All"],
+    slug:"smartavia",
+    credits:[
+      {role:"Режиссёр",name:"Айдар Динмухамедов"},
+      {role:"Продюсер",name:"Анна Володина"},
+      {role:"Оператор-постановщик",name:"Кирилл Матвеев"},
+      {role:"Художник-постановщик",name:"Полина Ярошенко"},
+      {role:"Второй режиссер",name:"Юлмаз Алмира"},
+      {role:"Колорист",name:"Илья Иванов"}
+    ]
+  },
+  {
+    vimeoId:"https://vimeo.com/1028014343",
+    title:"Лаврики",
+    client:"",
+    ratio:56.25,
+    year:"",
+    format:"Brand",
+    desc:"",
+    mp4:"https://video.wixstatic.com/video/56df72_3bd4007ef4bd4763bde7c80d11096f65/720p/mp4/file.mp4",
+    customThumb:"https://static.wixstatic.com/media/56df72_7149681e351d4ad1a8a31d3f30e5f5f7~mv2.jpg",
+    gallery:[],
+    galleryCols:2,
+    spanFull:false,
+    spanHeight:"",
+    hideOnExpand:false,
+    hiddenFromGrid:false,
+    hideOnMain:false,
+    categories:["Commercial"],
+    slug:"lavriki",
+    credits:[
+      {role:"Режиссёр",name:"Свят Брусникин"},
+      {role:"Оператор-постановщик",name:"Кирилл Матвеев"}
+    ]
+  },
+  {
+    vimeoId:"https://vimeo.com/967731711",
+    title:"Сбер",
+    client:"Сбер",
+    ratio:56.25,
+    year:"2024",
+    format:"Commercial",
+    desc:"",
+    mp4:"https://video.wixstatic.com/video/56df72_a9a3605aec574002ab08283eb5d62a79/720p/mp4/file.mp4",
+    customThumb:"https://static.wixstatic.com/media/56df72_ff10126ea1f0437f8d1b4e900eaa3102~mv2.jpg",
+    gallery:[],
+    galleryCols:2,
+    spanFull:false,
+    spanHeight:"",
+    hideOnExpand:false,
+    hiddenFromGrid:false,
+    hideOnMain:false,
+    categories:["Commercial","All"],
+    slug:"sber",
+    credits:[
+      {role:"Продакшн",name:"Smoke Machine"},
+      {role:"Режиссёр",name:"Денис Исаикин"},
+      {role:"Оператор-постановщик",name:"Кирилл Матвеев"}
+    ]
+  },
+  {
+    vimeoId:"https://vimeo.com/850935485",
+    title:"Помни Имя Своё — Небо Такое Синее",
+    client:"",
+    ratio:56.25,
+    year:"2023",
+    format:"Music video",
+    desc:"",
+    mp4:"https://video.wixstatic.com/video/56df72_ca0ccc7b60b147d8b7d027e465bb49cd/720p/mp4/file.mp4",
+    customThumb:"https://static.wixstatic.com/media/56df72_3283797f41884a6597fb53c23b67ed88~mv2.jpg",
+    gallery:[],
+    galleryCols:2,
+    spanFull:false,
+    spanHeight:"",
+    hideOnExpand:false,
+    hiddenFromGrid:false,
+    hideOnMain:false,
+    categories:["Music","All"],
+    slug:"nebo_takoe_sinee",
+    credits:[
+      {role:"Режиссёр",name:"Евгений Бронников"},
+      {role:"Оператор",name:"Кирилл Матвеев"},
+      {role:"Колорист",name:"Егор Мигалов"}
+    ]
+  },
+  {
+    vimeoId:"https://vimeo.com/792932219",
+    title:"Dvanov — Shushan",
+    client:"",
+    ratio:56.25,
+    year:"2023",
+    format:"Music video",
+    desc:"",
+    mp4:"https://video.wixstatic.com/video/56df72_1c67a51986154c6193c74377f9f7cb94/1080p/mp4/file.mp4",
+    customThumb:"https://static.wixstatic.com/media/56df72_1d3f4c11739f4f61b9198fff0f9df809~mv2.jpg",
+    gallery:[],
+    galleryCols:2,
+    spanFull:false,
+    spanHeight:"",
+    hideOnExpand:false,
+    hiddenFromGrid:false,
+    hideOnMain:false,
+    categories:["Music"],
+    slug:"shushan",
+    credits:[
+      {role:"Режиссёр",name:"Евгений Бронников"},
+      {role:"Оператор",name:"Кирилл Матвеев"}
+    ]
+  },
+  {
+    vimeoId:"https://vimeo.com/736554698",
+    title:"SETTLERS - Боля",
+    client:"",
+    ratio:56.25,
+    year:"",
+    format:"",
+    desc:"",
+    mp4:"https://video.wixstatic.com/video/56df72_bd84b6da7283481cb45b4ab9624e6c9e/1080p/mp4/file.mp4",
+    customThumb:"",
+    gallery:[],
+    galleryCols:2,
+    spanFull:false,
+    spanHeight:"",
+    hideOnExpand:false,
+    hiddenFromGrid:false,
+    hideOnMain:false,
+    categories:["Music","All"],
+    slug:"settlers_bolya",
+    credits:[
+      {role:"Режиссер",name:"Егор Мигалов"},
+      {role:"Продюсер",name:"Александра Евлашкина"},
+      {role:"Оператор-постановщик",name:"Кирилл Матвеев"},
+      {role:"Зудожник-постановщик",name:"Дарья Бедрина"}
+    ]
+  },
+  {
+    vimeoId:"https://vimeo.com/688107623",
+    title:"EuroDecor",
+    client:"",
+    ratio:56.25,
+    year:"",
+    format:"",
+    desc:"",
+    mp4:"https://video.wixstatic.com/video/56df72_152755154df64c2e86a9e6be87ce42d0/1080p/mp4/file.mp4",
+    customThumb:"https://static.wixstatic.com/media/56df72_26a0041c3b0045c9a23623a52c838e5d~mv2.jpg",
+    gallery:[],
+    galleryCols:2,
+    spanFull:false,
+    spanHeight:"",
+    hideOnExpand:false,
+    hiddenFromGrid:true,
+    hideOnMain:false,
+    categories:["Commercial"],
+    slug:"eurodecor",
+    credits:[
+      {role:"Режиссёр",name:"Александр Силантьев"},
+      {role:"Оператор-постановщик",name:"Кирилл Матвеев"},
+      {role:"Художник-постановщик",name:"Лидия Доценко"}
+    ]
+  },
+  {
+    vimeoId:"https://vimeo.com/504702130",
+    title:"VK Мой профиль",
+    client:"",
+    ratio:56.25,
+    year:"2026",
+    format:"",
+    desc:"",
+    mp4:"",
+    customThumb:"",
+    gallery:[],
+    galleryCols:2,
+    spanFull:false,
+    spanHeight:"",
+    hideOnExpand:false,
+    hiddenFromGrid:false,
+    hideOnMain:false,
+    categories:["Commercial"],
+    slug:"vk_my_profile",
+    credits:[
+
+    ]
+  },
+  {
+    vimeoId:"https://vimeo.com/481153154",
+    title:"Dvanov - Мы отберем у них все",
+    client:"",
+    ratio:56.25,
+    year:"",
+    format:"",
+    desc:"",
+    mp4:"",
+    customThumb:"https://static.wixstatic.com/media/56df72_1778406403154b318a58464233d2f409~mv2.jpg",
+    gallery:[],
+    galleryCols:2,
+    spanFull:false,
+    spanHeight:"",
+    hideOnExpand:false,
+    hiddenFromGrid:true,
+    hideOnMain:true,
+    categories:["Music"],
+    slug:"dvanov",
+    credits:[
+
+    ]
+  }
+];
+
+function parseVimeo(v){
+  var id="",hash="",clean=(v||"").split("?")[0];
+  var m=clean.match(/vimeo\.com\/([0-9]+)(?:\/([a-f0-9]+))?/);
+  if(m){id=m[1];hash=m[2]||"";}
+  else if(/^[0-9]+$/.test(v)){id=v;}
+  var oembed="https://vimeo.com/"+id+(hash?"/"+hash:"");
+  var player="https://player.vimeo.com/video/"+id+(hash?"?h="+hash+"&":"?")+"autoplay=1&color=ffffff&title=0&byline=0&portrait=0&dnt=1";
+  return {id:id,oembed:oembed,player:player};
+}
+
+var grid=document.getElementById("grid");
+var expandedIdx=null,animating=false,items=[],thumbs={};
+var activeFilter=null;
+var contactMode=false;
+var photoMode=false;
+var shuffledPhotos=null; // перетасованный массив URL фоток, заполняется при первом открытии Photo
+
+function buildFilters(){
+  var cats=["Film","Commercial","Music"];
+  var wrap=document.getElementById("filters");
+  wrap.innerHTML="";
+  cats.forEach(function(cat){
+    var btn=document.createElement("button");
+    btn.className="f-btn"+(activeFilter===cat&&!contactMode&&!photoMode?" active":"");
+    btn.textContent=cat;
+    btn.addEventListener("click",function(){
+      if(contactMode||photoMode){
+        contactMode=false;
+        photoMode=false;
+        activeFilter=cat;
+        try{window.parent.postMessage({type:"portfolioScrollTop"},"*");}catch(e){}
+        applyContact();
+        applyPhoto();
+        applyFilter();buildFilters();
+        try{window.parent.postMessage({type:"portfolioFilter",filter:cat.toLowerCase()},"*");}catch(e){}
+        return;
+      }
+      activeFilter=(activeFilter===cat)?null:cat;
+      applyFilter();buildFilters();
+      try{window.parent.postMessage({type:"portfolioFilter",filter:activeFilter?activeFilter.toLowerCase():""},"*");}catch(e){}
+    });
+    wrap.appendChild(btn);
+  });
+  // Кнопка Photo — рядом с категориями, отдельный режим (как About)
+  var hasPhotos=(PHOTOS&&PHOTOS.length>0);
+  if(hasPhotos){
+    var pb=document.createElement("button");
+    pb.className="f-btn"+(photoMode?" active":"");
+    pb.textContent="Photo";
+    pb.addEventListener("click",function(){
+      photoMode=!photoMode;
+      if(photoMode){
+        if(expandedIdx!==null)collapse();
+        activeFilter=null;
+        contactMode=false;
+        try{window.parent.postMessage({type:"portfolioScrollTop"},"*");}catch(e){}
+      }
+      applyContact();
+      applyPhoto();
+      applyFilter();
+      buildFilters();
+      try{window.parent.postMessage({type:"portfolioFilter",filter:photoMode?"photo":""},"*");}catch(e){}
+    });
+    wrap.appendChild(pb);
+  }
+  // Contact кнопка показывается только если есть mp4 фон или ссылки
+  var hasContact=(CONTACT_DATA&&(CONTACT_DATA.bgMp4||(CONTACT_DATA.links&&CONTACT_DATA.links.length>0)));
+  if(hasContact){
+    var cb=document.createElement("button");
+    cb.className="f-btn f-contact"+(contactMode?" active":"");
+    cb.textContent="About";
+    cb.addEventListener("click",function(){
+      contactMode=!contactMode;
+      if(contactMode){
+        // выходим из expanded если открыт
+        if(expandedIdx!==null)collapse();
+        activeFilter=null;
+        photoMode=false;
+        try{window.parent.postMessage({type:"portfolioScrollTop"},"*");}catch(e){}
+      }
+      applyContact();
+      applyPhoto();
+      applyFilter();
+      buildFilters();
+    });
+    wrap.appendChild(cb);
+  }
+  if(typeof updateFiltersLayout==="function")updateFiltersLayout();
+}
+
+function applyContact(){
+  var screen=document.getElementById("contact-screen");
+  var g=document.getElementById("grid");
+  var flt=document.getElementById("filters");
+  if(!screen)return;
+  if(contactMode){
+    function escHtml(s){return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+    // Имя + роль
+    var nameEl=screen.querySelector("#contact-name .cn-name");
+    var roleEl=screen.querySelector("#contact-name .cn-role");
+    if(nameEl)nameEl.textContent=CONTACT_DATA.name||"";
+    if(roleEl){
+      roleEl.textContent=CONTACT_DATA.role||"";
+      roleEl.style.display=(CONTACT_DATA.role||"").trim()?"":"none";
+    }
+    if(document.getElementById("contact-name")){
+      document.getElementById("contact-name").style.display=((CONTACT_DATA.name||"")+(CONTACT_DATA.role||"")).trim()?"":"none";
+    }
+    // Био (preserves \n via white-space:pre-line)
+    var bioEl=document.getElementById("contact-bio");
+    if(bioEl){
+      bioEl.textContent=CONTACT_DATA.bio||"";
+      bioEl.style.display=(CONTACT_DATA.bio||"").trim()?"":"none";
+    }
+    // Ссылки
+    var linksEl=document.getElementById("contact-links");
+    if(linksEl){
+      linksEl.innerHTML=(CONTACT_DATA.links||[]).map(function(l){
+        var label=escHtml(l.label||"");
+        var url=escHtml(l.url||"");
+        var target=/^(tel:|mailto:)/i.test(url)?"":" target=\"_blank\" rel=\"noopener\"";
+        return "<a class=\"contact-link\" href=\""+url+"\""+target+">"+label+"</a>";
+      }).join("");
+    }
+    // Видео-фон
+    var bg=document.getElementById("contact-bg");
+    if(bg){
+      if(CONTACT_DATA.bgMp4){
+        if(bg.getAttribute("src")!==CONTACT_DATA.bgMp4){
+          bg.setAttribute("src",CONTACT_DATA.bgMp4);
+          bg.load();
+        }
+        bg.style.display="";
+        var p=bg.play();
+        if(p&&p.catch)p.catch(function(){});
+      } else {
+        bg.style.display="none";
+      }
+    }
+    // Высота управляется в updateContactMobile (mobile: auto+min-height, desktop: fixed)
+    screen.classList.add("active");
+    document.body.classList.add("contact-open");
+    if(g)g.style.display="none";
+    // Мобильная раскладка по фактической ширине iframe
+    updateContactMobile();
+    // Fade-in после раскладки
+    requestAnimationFrame(function(){requestAnimationFrame(function(){screen.classList.add("visible");});});
+    // Запросим viewport, чтобы при первом включении уточнить высоту
+    try{window.parent.postMessage({type:"portfolioReelRequest"},"*");}catch(e){}
+  } else {
+    screen.classList.remove("visible");
+    screen.classList.remove("active");
+    document.body.classList.remove("contact-open");
+    var bg2=document.getElementById("contact-bg");
+    if(bg2){bg2.pause();}
+    if(g&&!photoMode)g.style.display="";
+  }
+  requestAnimationFrame(function(){requestAnimationFrame(function(){sendHeight();setTimeout(sendHeight,300);setTimeout(sendHeight,700);});});
+}
+
+function updateContactMobile(){
+  var screen=document.getElementById("contact-screen");
+  if(!screen||!screen.classList.contains("active"))return;
+  var w=document.body.offsetWidth||screen.offsetWidth||window.innerWidth||800;
+  var isMob=w<700;
+  screen.classList.toggle("mobile",isMob);
+  var flt=document.getElementById("filters");
+  var vh=reelViewportH||lbViewportH||(window.innerHeight||700);
+  var fh=flt?flt.offsetHeight:0;
+  var baseH=Math.max(400,vh-fh);
+  if(isMob){
+    // Mobile: экран может расти под контент. CSS делает height:auto !important.
+    screen.style.height="";
+    screen.style.minHeight=baseH+"px";
+  } else {
+    // Desktop: жёсткая высота viewport
+    screen.style.height=baseH+"px";
+    screen.style.minHeight="";
+  }
+}
+
+// ── PHOTO GRID: prelaod + smart shuffle ──────────────
+// Загружаем все картинки в памяти (без вставки в DOM), считаем aspect ratios.
+// Колбэк вызывается ровно один раз — когда все картинки либо загрузились, либо упали в onerror.
+var __phRatiosCache=null;
+function preloadAspectRatios(urls,callback){
+  if(__phRatiosCache){callback(__phRatiosCache);return;}
+  if(!urls||!urls.length){__phRatiosCache=[];callback([]);return;}
+  var ratios=new Array(urls.length);
+  var done=0;
+  urls.forEach(function(url,i){
+    var im=new Image();
+    var settle=function(){
+      if(ratios[i]!==undefined)return; // защита от двойного срабатывания
+      ratios[i]=(im.naturalWidth&&im.naturalHeight)?im.naturalWidth/im.naturalHeight:1;
+      done++;
+      if(done===urls.length){__phRatiosCache=ratios;callback(ratios);}
+    };
+    im.onload=settle;
+    im.onerror=settle;
+    im.src=url;
+    // Если из кеша — onload может не выстрелить
+    if(im.complete&&im.naturalWidth)setTimeout(settle,0);
+  });
+  // Аварийный таймаут — если что-то зависнет на 10с, всё равно показываем что есть
+  setTimeout(function(){
+    if(done<urls.length){
+      for(var i=0;i<urls.length;i++)if(ratios[i]===undefined)ratios[i]=1;
+      __phRatiosCache=ratios;
+      callback(ratios);
+    }
+  },10000);
+}
+
+// Решение «как разложить» для каждой фотки. Симулирует CSS Grid с auto-flow: dense.
+// Возвращает массив { placement: "default"|"right", expandFull: boolean }.
+// Правила:
+//  - wide-2 хочет направо (по хешу), если есть свободная узкая после неё → может встать в col 2-3
+//  - если wide-2 оставлена слева, но в её ряду в col 3 НИКТО не встанет → апгрейдим её в wide-3 (на всю ширину)
+//  - если wide-2 направо, но в её ряду в col 1 никто не встанет → тоже апгрейд в wide-3
+function decidePlacements(ratios){
+  var n=ratios.length;
+  var COLS=3;
+  // Хеш «хочет ли направо» — murmur3 финализатор
+  function wantsRight(i){
+    var hh=i;
+    hh=((hh^(hh<<16))*0x85ebca6b)>>>0;
+    hh=((hh^(hh>>>13))*0xc2b2ae35)>>>0;
+    hh=(hh^(hh>>>16))>>>0;
+    return (hh&1)===1;
+  }
+  // Шаг 1: предварительно решаем placement (default/right) с резервацией узких
+  var placements=new Array(n);
+  for(var i=0;i<n;i++)placements[i]="default";
+  var narrows=[];
+  for(var i=0;i<n;i++)if(ratios[i]<1.4)narrows.push(i);
+  var nextNarrow=0;
+  for(var i=0;i<n;i++){
+    var r=ratios[i];
+    if(r>=1.4&&r<2.0&&wantsRight(i)){
+      while(nextNarrow<narrows.length&&narrows[nextNarrow]<=i)nextNarrow++;
+      if(nextNarrow<narrows.length){
+        placements[i]="right";
+        nextNarrow++;
+      }
+    }
+  }
+  // Шаг 2: симулируем раскладку и считаем сколько RowUnits занимает каждая ячейка в каждом столбце.
+  // RowUnit = условная строка ~ширине колонки. Высота ячейки = colspan / ratio (round).
+  // Матрица — массив колонок, каждая = массив "занятых RowUnits" в виде сегментов [from, to, cellIdx].
+  // Достаточно посчитать для каждой ячейки её "row start" и "row end".
+  // Имитируем dense: для каждой ячейки в порядке источника ищем самый ранний row, где helf 2-3 свободных col подряд.
+  function colHeight(col,occ){
+    var max=0;
+    for(var k=0;k<occ[col].length;k++)if(occ[col][k]>max)max=occ[col][k];
+    return max;
+  }
+  // Каждая ячейка получает {rowStart, rowEnd, colStart, colEnd}
+  var slots=new Array(n);
+  // occ[col] = текущая "высота" заполнения колонки в RowUnits
+  var occ=[0,0,0];
+  function fits(rowStart,colStart,colSpan,rowSpan){
+    for(var c=colStart;c<colStart+colSpan;c++){
+      if(occ[c]>rowStart)return false;
+    }
+    return true;
+  }
+  for(var i=0;i<n;i++){
+    var r=ratios[i];
+    var colSpan;
+    if(r>=2.0)colSpan=3;
+    else if(r>=1.4)colSpan=2;
+    else colSpan=1;
+    var rowSpan=Math.max(1,Math.round(colSpan/r));
+    // Кандидатные стартовые позиции
+    var candidates=[];
+    if(colSpan===3){
+      candidates.push(0);
+    } else if(colSpan===2){
+      // wide-2: предпочтение по placement, но если не вмещается рано — попробуем другое место
+      if(placements[i]==="right")candidates.push(1,0);
+      else candidates.push(0,1);
+    } else {
+      candidates.push(0,1,2);
+    }
+    // Найти минимальный rowStart среди кандидатов
+    var bestRow=Infinity,bestCol=0;
+    for(var ci=0;ci<candidates.length;ci++){
+      var col=candidates[ci];
+      // Минимальный row где этот col и следующие colSpan-1 пустые
+      var row=0;
+      for(var c=col;c<col+colSpan;c++)if(occ[c]>row)row=occ[c];
+      if(row<bestRow){bestRow=row;bestCol=col;}
+    }
+    slots[i]={rowStart:bestRow,rowEnd:bestRow+rowSpan,colStart:bestCol,colEnd:bestCol+colSpan,colSpan:colSpan,upgraded:false};
+    // Обновить occ
+    for(var c=bestCol;c<bestCol+colSpan;c++)occ[c]=bestRow+rowSpan;
+    // Обновить placement по фактическому положению
+    if(colSpan===2)placements[i]=(bestCol===1)?"right":"default";
+  }
+  // Шаг 3: найти "осиротевшие" wide-2 — те, у которых в их ряду соседняя колонка пустая на всю их высоту.
+  // Проверяем: для wide-2 в col 0-1 (default) есть ли в [rowStart, rowEnd) НИКТО в col 2.
+  // Для wide-2 в col 1-2 (right) — есть ли в [rowStart, rowEnd) НИКТО в col 0.
+  // "Никто" = ни одна другая ячейка не покрывает этот (col,row) range.
+  for(var i=0;i<n;i++){
+    var s=slots[i];
+    if(s.colSpan!==2)continue;
+    var neighbor=(s.colStart===0)?2:0;
+    var hasNeighbor=false;
+    for(var j=0;j<n;j++){
+      if(j===i)continue;
+      var t=slots[j];
+      // t покрывает (neighbor, [s.rowStart, s.rowEnd))?
+      if(t.colStart<=neighbor&&t.colEnd>neighbor&&t.rowStart<s.rowEnd&&t.rowEnd>s.rowStart){
+        hasNeighbor=true;break;
+      }
+    }
+    if(!hasNeighbor)s.upgraded=true; // апгрейд до wide-3
+  }
+  // Шаг 4: построить финальный результат
+  var result=new Array(n);
+  for(var i=0;i<n;i++){
+    result[i]={placement:placements[i],expandFull:slots[i].upgraded};
+  }
+  return result;
+}
+
+function applyPhoto(){
+  var pg=document.getElementById("photo-grid");
+  var g=document.getElementById("grid");
+  if(!pg)return;
+  if(photoMode){
+    if(g)g.style.display="none";
+    pg.classList.add("active");
+    if(!pg.dataset.built){
+      pg.dataset.built="1"; // ставим сразу чтобы повторный applyPhoto не запустил второй preload
+      pg.innerHTML="<div id=\"photo-loading\">Загрузка...</div>";
+      // Случайный порядок при первом открытии страницы фото. Fisher-Yates на копии PHOTOS.
+      // Перетасованный массив фиксируется в shuffledPhotos — между переключениями режимов и ресайзом
+      // порядок не меняется (только при перезагрузке страницы).
+      shuffledPhotos=(PHOTOS||[]).slice();
+      for(var sh=shuffledPhotos.length-1;sh>0;sh--){
+        var sj=Math.floor(Math.random()*(sh+1));
+        var st=shuffledPhotos[sh];shuffledPhotos[sh]=shuffledPhotos[sj];shuffledPhotos[sj]=st;
+      }
+      preloadAspectRatios(shuffledPhotos,function(ratios){
+        var placements=decidePlacements(ratios);
+        buildPhotoGrid(ratios,placements);
+        updatePhotoCols();
+        requestAnimationFrame(function(){requestAnimationFrame(function(){
+          sendHeight();
+          setTimeout(sendHeight,300);
+          setTimeout(sendHeight,700);
+          setTimeout(sendHeight,1500);
+        });});
+      });
+    } else {
+      updatePhotoCols();
+    }
+  } else {
+    pg.classList.remove("active");
+    if(g&&!contactMode)g.style.display="";
+  }
+  requestAnimationFrame(function(){requestAnimationFrame(function(){
+    sendHeight();
+    setTimeout(sendHeight,300);
+    setTimeout(sendHeight,700);
+    setTimeout(sendHeight,1500);
+    setTimeout(sendHeight,3000);
+    setTimeout(sendHeight,5000);
+  });});
+}
+
+function buildPhotoGrid(ratios,placements){
+  var pg=document.getElementById("photo-grid");
+  if(!pg)return;
+  pg.innerHTML="";
+  ratios=ratios||[];
+  placements=placements||[];
+  // Используем перетасованный порядок, если он есть (после shuffle при applyPhoto).
+  // Fallback на PHOTOS — на случай вызова из других мест.
+  var srcList=shuffledPhotos||PHOTOS||[];
+  srcList.forEach(function(url,i){
+    var cell=document.createElement("div");
+    cell.className="photo-cell";
+    var img=document.createElement("img");
+    img.alt="";
+    img.dataset.photoIdx=i;
+    var pl=placements[i]||{placement:"default",expandFull:false};
+    img.dataset.placement=pl.placement||"default";
+    img.dataset.expandFull=pl.expandFull?"1":"0";
+    img.loading="lazy";
+    var onReady=function(){
+      applyPhotoSpan(cell,img);
+      // sendHeight() вызовется из resizePhotoCell после установки span,
+      // чтобы getBoundingClientRect видел актуальную высоту grid
+    };
+    img.addEventListener("load",onReady);
+    img.addEventListener("error",function(){schedulePhotoHeight();});
+    img.src=url;
+    // Если картинка уже в кеше (что вероятно после preloadAspectRatios) — load может не выстрелить
+    if(img.complete&&img.naturalWidth)setTimeout(onReady,0);
+    cell.appendChild(img);
+    pg.appendChild(cell);
+  });
+}
+
+// RAF-throttled sendHeight для photo grid:
+// 30 фоток → 30 onload событий → без throttle получили бы 30 sendHeight в один кадр.
+var _phHeightTimer=null;
+function schedulePhotoHeight(){
+  if(_phHeightTimer)return;
+  _phHeightTimer=requestAnimationFrame(function(){
+    _phHeightTimer=null;
+    sendHeight();
+  });
+}
+
+function getPhotoCols(){
+  var pg=document.getElementById("photo-grid");
+  if(!pg)return 3;
+  var w=pg.offsetWidth||grid.offsetWidth||document.body.offsetWidth||800;
+  if(w<540)return 2;
+  return 3;
+}
+
+function applyPhotoSpan(cell,img){
+  if(!img.naturalWidth||!img.naturalHeight)return;
+  var ratio=img.naturalWidth/img.naturalHeight;
+  var cols=getPhotoCols();
+  cell.classList.remove("wide-2","wide-3");
+  cell.style.gridColumn=""; // сброс inline-стиля (мог быть от прошлого вызова при ресайзе колонок)
+  var expand=(img.dataset.expandFull==="1");
+  // Соотношения сторон: <1.4 — узкое/вертикальное, 1.4-2.0 — широкое, >=2.0 — очень широкое
+  if(cols>=3){
+    if(ratio>=2.0)cell.classList.add("wide-3");
+    else if(ratio>=1.4){
+      // Если в раскладке у этой wide-2 не было бы соседа — растянуть на всю ширину
+      if(expand)cell.classList.add("wide-3");
+      else{
+        cell.classList.add("wide-2");
+        if(img.dataset.placement==="right")cell.style.gridColumn="2 / span 2";
+      }
+    }
+  } else if(cols===2){
+    if(ratio>=1.4)cell.classList.add("wide-2");
+    // в 2-колоночном режиме wide-2 занимает всю ширину, placement/expand не применяется
+  }
+  // После применения wide-класса ширина ячейки меняется → нужен reflow перед измерением
+  requestAnimationFrame(function(){resizePhotoCell(cell,img);});
+}
+
+function resizePhotoCell(cell,img){
+  var pg=document.getElementById("photo-grid");
+  if(!pg)return;
+  var cs=window.getComputedStyle(pg);
+  var rowH=parseFloat(cs.gridAutoRows)||4;
+  var gap=parseFloat(cs.rowGap||cs.gap)||0;
+  // getBoundingClientRect форсит layout sync — высота актуальная
+  var h=img.getBoundingClientRect().height;
+  if(!h)return;
+  var rows=Math.ceil((h+gap)/(rowH+gap));
+  cell.style.gridRowEnd="span "+rows;
+  // Теперь span установлен — можно сообщить родителю новую высоту grid
+  schedulePhotoHeight();
+}
+
+function updatePhotoCols(){
+  var pg=document.getElementById("photo-grid");
+  if(!pg)return;
+  var n=getPhotoCols();
+  pg.style.gridTemplateColumns="repeat("+n+",1fr)";
+  // Пересчитать span классы и row-span для каждой ячейки
+  Array.prototype.forEach.call(pg.querySelectorAll(".photo-cell"),function(cell){
+    var img=cell.querySelector("img");
+    if(img&&img.naturalWidth)applyPhotoSpan(cell,img);
+  });
+}
+
+function updateFiltersLayout(){
+  var flt=document.getElementById("filters");
+  if(!flt)return;
+  // На узких экранах включаем nowrap + меньший шрифт/gap чтобы все кнопки помещались в одну строку
+  var w=document.body.offsetWidth||window.innerWidth||800;
+  flt.classList.toggle("compact",w<540);
+}
+
+function isMobile(){return grid.offsetWidth<540;}
+function isTablet(){
+  // Touch device with width >= 540 (iPad portrait/landscape, not iPhone, not desktop).
+  if(grid.offsetWidth<540)return false;
+  try{return !!(window.matchMedia&&window.matchMedia("(pointer: coarse)").matches);}catch(_){return false;}
+}
+
+function updateGridCols(){
+  var mob=isMobile();
+  var tabletReel=!mob&&isTablet()&&activeFilter;
+  if(mob){grid.style.gridTemplateColumns="1fr";}
+  else if(tabletReel){grid.style.gridTemplateColumns="1fr";}
+  else{var c=activeFilter?((CAT_COLS&&CAT_COLS[activeFilter])||COLS):COLS;grid.style.gridTemplateColumns="repeat("+c+",1fr)";}
+  // Сброс высоты span-full на мобильной ширине — @media в iframe не срабатывает (читает родительское окно)
+  items.forEach(function(el){
+    if(!el||!el.classList.contains("span-full"))return;
+    var tw=el.querySelector(".thumb-wrap");
+    if(!tw)return;
+    if(mob){tw.style.aspectRatio="16/9";tw.style.height="auto";}
+    else{tw.style.aspectRatio="";tw.style.height="";}
+  });
+  // Галерея в открытом проекте: 1 колонка на мобиле, иначе по настройкам видео
+  var vpg=document.getElementById("vp-gallery");
+  if(vpg&&expandedIdx!==null){
+    var ev=videos[expandedIdx];
+    var vgc=mob?1:((ev&&ev.galleryCols)||2);
+    vpg.style.gridTemplateColumns="repeat("+vgc+",1fr)";
+  }
+}
+
+function applyFilter(){
+  updateGridCols();
+  items.forEach(function(el,i){
+    if(!el)return;
+    var v=videos[i];
+    if(activeFilter===null){el.style.display=v.hideOnMain?"none":"";}
+    else{
+      var cats=v.categories||[];
+      el.style.display=(cats.indexOf(activeFilter)!==-1)?"":"none";
+    }
+  });
+  requestAnimationFrame(function(){requestAnimationFrame(function(){sendHeight();setTimeout(sendHeight,300);setTimeout(sendHeight,700);});});
+  if(isReelMode()&&!animating){reelIdx=0;reelDeltaAccum=0;try{window.parent.postMessage({type:"portfolioReelRequest"},"*");}catch(ex){}}
+  else if(!isReelMode()){items.forEach(function(el){if(!el)return;el.classList.remove("reel-active");var vid=el.querySelector(".hover-video");if(vid){vid.pause();vid.currentTime=0;}});}
+}
+
+if(window.ResizeObserver){
+  new ResizeObserver(function(){updateGridCols();updateContactMobile();updatePhotoCols();}).observe(grid);
+  var _csForObs=document.getElementById("contact-screen");
+  if(_csForObs){new ResizeObserver(function(){updateContactMobile();}).observe(_csForObs);}
+  var _pgForObs=document.getElementById("photo-grid");
+  if(_pgForObs){new ResizeObserver(function(){updatePhotoCols();}).observe(_pgForObs);}
+  // Отдельный observer на body — он видим всегда (в отличие от grid при photo/contact режимах)
+  new ResizeObserver(function(){updateFiltersLayout();}).observe(document.body);
+}
+
+function buildItems(){
+  grid.innerHTML="";items=[];
+  videos.forEach(function(v,idx){
+    if(v.hiddenFromGrid){items.push(null);return;}
+    var el=document.createElement("div");
+    el.className="item"+(v.spanFull?" span-full":"");
+    if(v.spanFull&&v.spanHeight){el.style.setProperty("--span-h",v.spanHeight+"px");}
+    el.style.width="";
+    var ratio=v.ratio||56.25;
+    var thumbHtml=v.customThumb
+      ?"<img class=\"brick-img\" src=\""+v.customThumb+"\" alt=\""+v.title+"\">"
+      :"<div class=\"thumb-ph\" style=\"width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:11px;color:#444;padding:10px;text-align:center;\">"+v.title+"</div>";
+    el.innerHTML=
+      "<div class=\"thumb-wrap\">"+thumbHtml+(v.mp4?"<video class=\"hover-video\" src=\""+v.mp4+"\" muted loop playsinline preload=\"auto\"></video>":"")+"</div>"
+      +"<div class=\"brick-overlay\"><div class=\"brick-info\"><div class=\"brick-title\">"+v.title+"</div>"+(v.client?"<div class=\"brick-client\">"+v.client+"</div>":"")+"</div></div>";
+    el.addEventListener("click",function(e){if(animating)return;if(expandedIdx===idx)collapse();else expand(idx);});
+    el.addEventListener("touchstart",function(){
+      if(isReelMode())return;
+      // Сбрасываем превью на других карточках
+      items.forEach(function(other){
+        if(!other||other===el)return;
+        if(other.classList.contains("touch-active")){
+          other.classList.remove("touch-active");
+          var ov=other.querySelector(".hover-video");
+          if(ov&&!other.classList.contains("reel-active")){ov.pause();ov.currentTime=0;}
+        }
+      });
+      // Активируем превью на этой карточке
+      el.classList.add("touch-active");
+      var vid=el.querySelector(".hover-video");
+      if(vid)vid.play().catch(function(){});
+    },{passive:true});
+    el.addEventListener("mouseenter",function(){if(isReelMode())return;var vid=el.querySelector(".hover-video");if(vid)vid.play().catch(function(){});});
+    el.addEventListener("mouseleave",function(){
+      var vid=el.querySelector(".hover-video");if(!vid)return;
+      if(isReelMode()){var vis=reelVisible();if(vis[reelIdx]===el)return;}
+      vid.pause();vid.currentTime=0;
+    });
+    grid.appendChild(el);items.push(el);
+    if(!v.customThumb&&v.vimeoId)loadThumb(v.vimeoId,idx);
+  });
+}
+
+function expand(idx){
+  if(animating)return;
+  animating=true;expandedIdx=idx;
+  var _el0=items[idx];
+  var _cols=activeFilter?((CAT_COLS&&CAT_COLS[activeFilter])||COLS):COLS;
+  if(_el0){
+    var _absY0=getElAbsY(_el0);
+    if(_cols===1){
+      reelSavedAnchor=_absY0+_el0.offsetHeight/2;
+      reelSavedAnchorMode="center";
+      var _vis0=items.filter(function(e){if(!e)return false;return e.style.display!=="none";});
+      var _newIdx=_vis0.indexOf(_el0);
+      reelIdxSaved=_newIdx>=0?_newIdx:reelIdx;
+    } else {
+      reelSavedAnchor=_absY0+_el0.offsetHeight/2;
+      reelSavedAnchorMode="center";
+      reelIdxSaved=reelIdx;
+    }
+  } else {
+    reelSavedAnchor=0;reelSavedAnchorMode="top";reelIdxSaved=reelIdx;
+  }
+  try{window.parent.postMessage({type:"portfolioReelRequest"},"*");}catch(e){}
+  var v=videos[idx];
+  document.getElementById("vp-ttl").textContent=v.title;
+  document.getElementById("vp-cli").textContent=v.client||"";
+  var meta="";
+  if(v.year)meta+="<div><div class=\"ml\">Год</div><div class=\"mv\">"+v.year+"</div></div>";
+  if(v.format)meta+="<div><div class=\"ml\">Формат</div><div class=\"mv\">"+v.format+"</div></div>";
+  document.getElementById("vp-meta").innerHTML=meta;
+  document.getElementById("vp-desc").innerHTML=(v.desc||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\n/g,"<br>");
+  var gc=(v.credits||[]).filter(function(c){return c.role||c.name;});
+  document.getElementById("vp-crs").innerHTML=gc.map(function(c){return "<div><div class=\"crr\">"+c.role+"</div><div class=\"crn\">"+c.name+"</div></div>";}).join("");
+  document.getElementById("vp-crl").style.display=gc.length?"":"none";
+  var vp=document.getElementById("vp");
+  vp.classList.add("vp-visible");
+  requestAnimationFrame(function(){requestAnimationFrame(function(){vp.classList.add("open");});});
+  var _g=document.getElementById("grid");_g.style.opacity="";_g.classList.add("dimmed");
+  if(items[idx])items[idx].style.display="none";
+  videos.forEach(function(v,i){if(v.hideOnExpand&&i!==idx&&items[i])items[i].style.display="none";});
+  var flt=document.getElementById("filters");if(flt)flt.style.display="none";
+  var slug=v.slug||v.title.toLowerCase().replace(/[^a-z0-9\u0400-\u04ff\s-]/g,"").replace(/\s+/g,"-").replace(/-+/g,"-").replace(/^-|-$/g,"");
+  try{window.parent.postMessage({type:"portfolioDeeplink",slug:slug},"*");}catch(e){}
+  if(isReelMode()){}
+  else{try{window.parent.postMessage({type:"portfolioScrollTop"},"*");}catch(e){}}
+  setTimeout(function(){document.body.classList.add("vp-open");},600);
+  setTimeout(function(){
+    var pl=document.getElementById("vp-pl");
+    var hasVideo=v.vimeoId&&v.vimeoId.trim();
+    var imgs=(v.gallery||[]).filter(Boolean);
+    function buildPlayer(ratio){
+      var html="";
+      if(hasVideo){
+        var p=parseVimeo(v.vimeoId);
+        var pb=(ratio||56.25).toFixed(4);
+        html+="<div class=\"vp-video-wrap\" style=\"padding-bottom:"+pb+"%\"><iframe src=\""+p.player+"\" allow=\"autoplay;fullscreen;picture-in-picture\" allowfullscreen></iframe></div>";
+      }
+      if(imgs.length){
+        var gc=isMobile()?1:(v.galleryCols||2);
+        html+="<div id=\"vp-gallery\" style=\"grid-template-columns:repeat("+gc+",1fr);\">"+imgs.map(function(src,i){return "<img src=\""+src+"\" alt=\"\" data-lb=\""+i+"\" onload=\"sendHeight()\" onerror=\"sendHeight()\">"; }).join("")+"</div>";
+      }
+      pl.classList.toggle("gallery-mode",!hasVideo&&imgs.length>0);
+      pl.innerHTML=html;
+      animating=false;
+      sendHeight();setTimeout(sendHeight,300);setTimeout(sendHeight,800);
+    }
+    if(hasVideo){
+      var p2=parseVimeo(v.vimeoId);
+      fetch("https://vimeo.com/api/oembed.json?url="+encodeURIComponent(p2.oembed))
+        .then(function(r){return r.json();})
+        .then(function(d){buildPlayer(d.height&&d.width?(d.height/d.width*100):56.25);})
+        .catch(function(){buildPlayer(56.25);});
+    } else {
+      buildPlayer(null);
+    }
+    setTimeout(function(){animating=false;},900);
+  },400);
+}
+
+function collapse(){
+  if(animating||expandedIdx===null)return;
+  animating=true;
+  var collapsedIdx=expandedIdx;
+  expandedIdx=null;
+  var pl=document.getElementById("vp-pl");
+  pl.innerHTML="";pl.classList.remove("gallery-mode");
+  var vp=document.getElementById("vp");
+  var vpH=vp.offsetHeight;
+  vp.style.height=vpH+"px";
+  vp.style.overflow="hidden";
+  requestAnimationFrame(function(){
+    vp.style.transition="opacity .5s cubic-bezier(.4,0,.2,1),transform .5s cubic-bezier(.4,0,.2,1),height .5s cubic-bezier(.4,0,.2,1)";
+    vp.style.height="0";
+    vp.classList.remove("open");
+  });
+  var _gc=document.getElementById("grid");_gc.classList.remove("dimmed");_gc.style.opacity="1";
+  items.forEach(function(el){if(el)el.classList.remove("touch-active");});
+  items.forEach(function(el,i){
+    if(!el)return;
+    if(activeFilter===null){el.style.display=videos[i].hideOnMain?"none":"";}
+    else{var v=videos[i];var cats=v.categories||[];el.style.display=(cats.indexOf(activeFilter)!==-1)?"":"none";}
+  });
+  updateGridCols();
+  document.body.classList.remove("vp-open");
+  var flt=document.getElementById("filters");if(flt)flt.style.display="";
+  try{window.parent.postMessage({type:"portfolioDeeplink",slug:""},"*");}catch(e){}
+  reelIdx=reelIdxSaved;
+  reelPendingRestore=true;
+  requestAnimationFrame(function(){requestAnimationFrame(function(){
+    sendHeight();
+    try{window.parent.postMessage({type:"portfolioReelRequest"},"*");}catch(e){}
+  });});
+  setTimeout(function(){
+    if(reelPendingRestore){
+      reelPendingRestore=false;
+      try{window.parent.postMessage({type:"portfolioScrollTo",y:reelSavedScroll},"*");}catch(e){}
+    }
+  },500);
+  setTimeout(function(){if(isReelMode())reelPlayFocused();},620);
+  setTimeout(function(){
+    vp.classList.remove("vp-visible");vp.style.height="";vp.style.overflow="";vp.style.transition="";
+    animating=false;
+    reelBusy=false;reelDeltaAccum=0;
+    try{window.focus();document.body.focus();if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();}catch(e){}
+    reelSavedAnchor=0;
+  },520);
+}
+
+document.getElementById("vp-x").addEventListener("click",collapse);
+document.addEventListener("keydown",function(e){if(e.key==="Escape"&&!lbIsOpen)collapse();});
+document.addEventListener("click",function(e){
+  if(expandedIdx===null)return;
+  if(e.target.closest("#vp"))return;
+  if(e.target.closest("#lb"))return;
+  collapse();
+});
+// Сброс touch-превью при тапе вне карточек (свайп-скролл, пустое место)
+document.addEventListener("touchstart",function(e){
+  if(expandedIdx!==null)return;
+  if(e.target.closest(".item"))return;
+  items.forEach(function(el){
+    if(!el)return;
+    if(el.classList.contains("touch-active")){
+      el.classList.remove("touch-active");
+      var v=el.querySelector(".hover-video");
+      if(v&&!el.classList.contains("reel-active")){v.pause();v.currentTime=0;}
+    }
+  });
+},{passive:true});
+
+function loadThumb(vimeoId,idx){
+  if(thumbs[vimeoId]!==undefined)return;
+  thumbs[vimeoId]=null;
+  var p=parseVimeo(vimeoId);
+  if(!p.id)return;
+  fetch("https://vimeo.com/api/oembed.json?url="+encodeURIComponent(p.oembed)+"&width=900")
+    .then(function(r){return r.json();})
+    .then(function(d){
+      thumbs[vimeoId]=d.thumbnail_url;
+      var el=items[idx];if(!el)return;
+      var ph=el.querySelector(".thumb-ph");if(!ph)return;
+      var img=document.createElement("img");
+      img.className="brick-img";img.src=d.thumbnail_url;img.alt=videos[idx].title;
+      img.style.cssText="width:100%;display:block;";
+      img.onload=function(){sendHeight();};
+      ph.replaceWith(img);
+    })
+    .catch(function(){});
+}
+
+var lbImgs=[],lbIdx=0,lbIsOpen=false,lbViewportH=0,lbPending=false;
+function positionLb(topPx,heightPx){
+  var lb=document.getElementById("lb");
+  lb.style.top=topPx+"px";
+  lb.style.height=heightPx+"px";
+  sizeLightboxImg(heightPx);
+}
+function sizeLightboxImg(heightPx){
+  // vh внутри iframe считается от высоты iframe (может быть 50000px) — НЕ от окна браузера.
+  // Поэтому max-height/max-width ставим инлайном по реальному viewportH (от Velo) и iframe-width.
+  var img=document.getElementById("lb-img");
+  if(!img)return;
+  var vh=heightPx||lbGetH();
+  // Отступ сверху+снизу для крестика и счётчика
+  var pad=64;
+  img.style.maxHeight=Math.max(120,vh-pad)+"px";
+  // На узких экранах стрелки prev/next занимают много места — уменьшаем горизонтальный отступ
+  var iframeW=window.innerWidth||document.body.offsetWidth||800;
+  var sidePad=iframeW<540?56:120;
+  img.style.maxWidth="calc(100% - "+sidePad+"px)";
+}
+function lbGetH(){return lbViewportH||Math.round(window.screen.availHeight*0.78)||700;}
+// Если окно браузера ресайзится — пересчитать ограничения по ширине у открытого лайтбокса.
+// Высоту обновляет Velo через portfolioViewportH (приходит на скролле).
+window.addEventListener("resize",function(){if(lbIsOpen)sizeLightboxImg();});
+function lbOpen(imgs,i){
+  lbImgs=imgs;lbIdx=i;
+  document.getElementById("lb").classList.toggle("multi",imgs.length>1);
+  lbPending=true;
+  // Ask Velo for current viewport position — lbShow fires when response arrives
+  try{window.parent.postMessage({type:"portfolioLightboxOpen"},"*");}catch(e){
+    // No parent (browser test) — show immediately with best guess
+    lbPending=false;
+    positionLb(0,lbGetH());
+    lbShow();
+  }
+  // Fallback: if no response in 120ms, show anyway
+  setTimeout(function(){if(lbPending){lbPending=false;positionLb(0,lbGetH());lbShow();}},120);
+}
+function lbShow(){
+  var img=document.getElementById("lb-img");
+  img.src="";
+  setTimeout(function(){img.src=lbImgs[lbIdx];},10);
+  document.getElementById("lb-counter").textContent=(lbIdx+1)+" / "+lbImgs.length;
+  document.getElementById("lb").classList.add("open");
+  document.getElementById("lb-bg").classList.add("open");
+  document.body.classList.add("lb-open");
+  lbIsOpen=true;
+}
+function lbClose(){
+  document.getElementById("lb").classList.remove("open");
+  document.getElementById("lb-bg").classList.remove("open");
+  document.body.classList.remove("lb-open");
+  document.getElementById("lb-counter").textContent="";
+  lbIsOpen=false;
+  setTimeout(function(){document.getElementById("lb-img").src="";},350);
+}
+function lbPrev(){lbIdx=(lbIdx-1+lbImgs.length)%lbImgs.length;lbShow();}
+function lbNext(){lbIdx=(lbIdx+1)%lbImgs.length;lbShow();}
+
+// ── REEL MODE ─────────────────────────────────────
+var reelIframeTop=0,reelViewportH=0,reelIdx=0,reelBusy=false,reelTimer=null,reelDeltaAccum=0,reelLastWheel=0;
+var reelSavedScroll=0,reelIdxSaved=0,reelSavedAnchor=0,reelSavedAnchorMode="top",reelPendingRestore=false;
+function isReelMode(){
+  if(expandedIdx!==null)return false;
+  if(isMobile())return false;
+  if(photoMode||contactMode)return false;
+  if(isTablet()&&activeFilter)return true;
+  var c=activeFilter?((CAT_COLS&&CAT_COLS[activeFilter])||COLS):COLS;
+  return c===1;
+}
+function reelVisible(){
+  return items.filter(function(el){return el&&el.style.display!=="none";});
+}
+var reelGen=0;
+function reelPlayFocused(){
+  var vis=reelVisible();
+  var gen=++reelGen;
+  vis.forEach(function(el,i){
+    var vid=el.querySelector(".hover-video");
+    if(i===reelIdx){
+      if(vid){
+        vid.pause();
+        var doPlay=function(){
+          if(gen!==reelGen)return;
+          el.classList.add("reel-active");
+          vid.play().catch(function(){});
+        };
+        if(vid.readyState>=2&&vid.currentTime===0){
+          requestAnimationFrame(doPlay);
+        } else {
+          vid.currentTime=0;
+          var fired=false;
+          var onReady=function(){
+            if(fired)return;fired=true;
+            vid.removeEventListener("seeked",onReady);
+            doPlay();
+          };
+          vid.addEventListener("seeked",onReady);
+          setTimeout(function(){if(!fired){fired=true;vid.removeEventListener("seeked",onReady);doPlay();}},300);
+        }
+      } else {
+        el.classList.add("reel-active");
+      }
+    } else {
+      el.classList.remove("reel-active");
+      if(vid){
+        setTimeout(function(){vid.pause();vid.currentTime=0;},520);
+      }
+    }
+  });
+}
+function getElAbsY(el){var y=0;while(el){y+=el.offsetTop;el=el.offsetParent;}return y;}
+function reelSnap(idx){
+  var vis=reelVisible();if(!vis.length)return;
+  var clamped=Math.max(0,Math.min(idx,vis.length-1));
+  if(clamped===reelIdx&&clamped!==idx){
+    reelBusy=false;clearTimeout(reelTimer);reelDeltaAccum=0;
+    return;
+  }
+  reelIdx=clamped;
+  reelPlayFocused();
+  setTimeout(reelPlayFocused,350);
+  var target;
+  if(reelIdx===0){
+    target=Math.max(0,Math.round(reelIframeTop-20));
+  } else {
+    var el=vis[reelIdx];
+    var absY=getElAbsY(el);
+    var cy=absY+el.offsetHeight/2;
+    target=Math.max(0,Math.round(reelIframeTop+cy-reelViewportH/2));
+  }
+  try{window.parent.postMessage({type:"portfolioScrollTo",y:target},"*");}catch(e){}
+}
+function reelWheelHandler(e){
+  if(contactMode)return;
+  if(!isReelMode())return;
+  e.preventDefault();
+  var now=Date.now();
+  if(now-reelLastWheel>180){reelBusy=false;reelDeltaAccum=0;}
+  reelLastWheel=now;
+  if(reelBusy){reelDeltaAccum=0;return;}
+  reelDeltaAccum+=e.deltaY;
+  if(Math.abs(reelDeltaAccum)<15)return;
+  var d=reelDeltaAccum>0?1:-1;
+  reelDeltaAccum=0;
+  reelBusy=true;
+  clearTimeout(reelTimer);
+  reelTimer=setTimeout(function(){reelBusy=false;reelDeltaAccum=0;},1500);
+  reelSnap(reelIdx+d);
+}
+document.addEventListener("wheel",reelWheelHandler,{passive:false});
+
+// Touch swipe handler for reel mode (iPad / tablet) — wheel events do not fire on finger swipes.
+var reelTouchStartY=0,reelTouchActive=false;
+document.addEventListener("touchstart",function(e){
+  if(!isReelMode())return;
+  if(contactMode||expandedIdx!==null||lbIsOpen)return;
+  if(e.touches.length!==1)return;
+  reelTouchStartY=e.touches[0].clientY;
+  reelTouchActive=true;
+},{passive:true});
+document.addEventListener("touchmove",function(e){
+  if(!reelTouchActive||!isReelMode())return;
+  if(contactMode||expandedIdx!==null||lbIsOpen)return;
+  // Block native scroll so the snap controls movement.
+  if(e.cancelable)e.preventDefault();
+},{passive:false});
+document.addEventListener("touchend",function(e){
+  if(!reelTouchActive)return;
+  reelTouchActive=false;
+  if(!isReelMode())return;
+  if(contactMode||expandedIdx!==null||lbIsOpen)return;
+  var endY=(e.changedTouches&&e.changedTouches[0])?e.changedTouches[0].clientY:reelTouchStartY;
+  var dy=reelTouchStartY-endY;
+  if(Math.abs(dy)<40)return;
+  if(reelBusy)return;
+  reelBusy=true;clearTimeout(reelTimer);reelTimer=setTimeout(function(){reelBusy=false;reelDeltaAccum=0;},700);
+  reelSnap(reelIdx+(dy>0?1:-1));
+},{passive:true});
+
+// Universal wheel forwarder: forward all wheel deltas to parent for smooth easing in Velo.
+// Chrome wheel propagation works natively, but to make scroll feel consistent across browsers
+// we route everything through the smooth scroller. Delta is clamped to normalize between
+// Safari trackpad (~5px/tick) and Chrome mouse wheel (~100px/tick).
+(function(){
+  document.addEventListener("wheel",function(e){
+    if(isReelMode())return;
+    if(lbIsOpen){e.preventDefault();return;}
+    e.preventDefault();
+    var dy=e.deltaY;
+    if(e.deltaMode===1)dy*=32;
+    else if(e.deltaMode===2)dy*=window.innerHeight;
+    // Clamp per-tick delta — keeps Chrome from skipping past the smoothing entirely
+    var MAX=80;
+    if(dy>MAX)dy=MAX;else if(dy<-MAX)dy=-MAX;
+    try{window.parent.postMessage({type:"portfolioWheel",deltaY:dy},"*");}catch(_){}
+  },{passive:false});
+})();
+document.addEventListener("keydown",function(e){
+  if(!isReelMode()||expandedIdx!==null||lbIsOpen)return;
+  if(e.key==="ArrowDown"||e.key==="PageDown"){
+    e.preventDefault();
+    if(reelBusy)return;
+    reelBusy=true;clearTimeout(reelTimer);reelTimer=setTimeout(function(){reelBusy=false;},400);
+    reelSnap(reelIdx+1);
+  } else if(e.key==="ArrowUp"||e.key==="PageUp"){
+    e.preventDefault();
+    if(reelBusy)return;
+    reelBusy=true;clearTimeout(reelTimer);reelTimer=setTimeout(function(){reelBusy=false;},400);
+    reelSnap(reelIdx-1);
+  }
+});
+
+document.getElementById("lb-close").addEventListener("click",function(e){e.stopPropagation();lbClose();});
+document.getElementById("lb-prev").addEventListener("click",function(e){e.stopPropagation();lbPrev();});
+document.getElementById("lb-next").addEventListener("click",function(e){e.stopPropagation();lbNext();});
+document.getElementById("lb").addEventListener("click",function(e){if(e.target===this||e.target===document.getElementById("lb-img"))lbClose();});
+document.getElementById("lb-bg").addEventListener("click",function(){lbClose();});
+document.addEventListener("keydown",function(e){
+  if(!lbIsOpen)return;
+  if(e.key==="ArrowLeft"){e.preventDefault();lbPrev();}
+  else if(e.key==="ArrowRight"){e.preventDefault();lbNext();}
+  else if(e.key==="Escape"){e.preventDefault();lbClose();}
+});
+document.addEventListener("click",function(e){
+  var t=e.target.closest("[data-lb]");
+  if(!t)return;
+  var galleryEl=t.closest("#vp-gallery");
+  if(!galleryEl)return;
+  var imgs=Array.from(galleryEl.querySelectorAll("img[data-lb]")).map(function(img){return img.src;});
+  lbOpen(imgs,parseInt(t.dataset.lb)||0);
+});
+// Клик по фото в photo-grid — открыть лайтбокс со всеми фото
+document.addEventListener("click",function(e){
+  var t=e.target.closest("[data-photo-idx]");
+  if(!t)return;
+  var pg=t.closest("#photo-grid");
+  if(!pg)return;
+  var imgs=Array.from(pg.querySelectorAll("img[data-photo-idx]")).map(function(img){return img.src;});
+  lbOpen(imgs,parseInt(t.dataset.photoIdx)||0);
+});
+window.addEventListener("message",function(e){
+  if(!e.data)return;
+  if(e.data.viewportH){
+    lbViewportH=e.data.viewportH;
+    // Если лайтбокс открыт — пересчитать его размер под новый viewportH
+    if(lbIsOpen)sizeLightboxImg(e.data.viewportH);
+  }
+  if(e.data.type==="portfolioViewport"){
+    var iframeTop=typeof e.data.iframeTop==="number"?e.data.iframeTop:0;
+    positionLb(Math.max(0,-iframeTop),e.data.viewportH||lbGetH());
+    if(lbPending){lbPending=false;lbShow();}
+  }
+  if(e.data.type==="portfolioReelViewport"){
+    reelIframeTop=e.data.iframeTop||0;
+    reelViewportH=e.data.viewportH||600;
+    // Если активен contact mode — пересчитываем высоту через updateContactMobile
+    if(contactMode){
+      updateContactMobile();
+      sendHeight();
+    }
+    if(reelSavedAnchor>0){
+      if(reelSavedAnchorMode==="center"){
+        reelSavedScroll=Math.max(0,Math.round(reelIframeTop+reelSavedAnchor-reelViewportH/2));
+      } else {
+        reelSavedScroll=Math.max(0,Math.round(reelIframeTop+reelSavedAnchor-40));
+      }
+    }
+    if(reelPendingRestore){
+      reelPendingRestore=false;
+      try{window.parent.postMessage({type:"portfolioScrollTo",y:reelSavedScroll},"*");}catch(e){}
+    } else if(isReelMode()){
+      setTimeout(function(){reelSnap(reelIdx);},80);
+    }
+  }
+});
+
+buildItems();
+buildFilters();
+applyFilter();
+(function(){
+  var hash=decodeURIComponent((window.location.hash||"").replace(/^#/,""));
+  if(!hash)return;
+  var idx=videos.findIndex(function(v){
+    var s=v.slug||(v.title||"").toLowerCase().replace(/[^a-z0-9\u0400-\u04ff\s-]/g,"").replace(/\s+/g,"-").replace(/-+/g,"-").replace(/^-|-$/g,"");
+    return s===hash;
+  });
+  if(idx!==-1)setTimeout(function(){expand(idx);},900);
+})();
+window.addEventListener("message",function(e){
+  if(!e.data||e.data.type!=="portfolioApplyFilter")return;
+  var f=(e.data.filter||"").toLowerCase();
+  // Спец-режим "photo" — отдельный экран как About, не категория видео
+  if(f==="photo"){
+    if(PHOTOS&&PHOTOS.length){
+      photoMode=true;
+      contactMode=false;
+      activeFilter=null;
+      if(expandedIdx!==null)collapse();
+      applyContact();
+      applyPhoto();
+      applyFilter();
+      buildFilters();
+    }
+    return;
+  }
+  var cats=["Film","Commercial","Music"];
+  var matched=null;
+  for(var i=0;i<cats.length;i++){if(cats[i].toLowerCase()===f){matched=cats[i];break;}}
+  // Если приходит непустой фильтр — выходим из photo/contact режима
+  if(matched){
+    photoMode=false;
+    contactMode=false;
+    applyContact();
+    applyPhoto();
+  }
+  activeFilter=matched;
+  applyFilter();buildFilters();
+});
+window.addEventListener("message",function(e){
+  if(!e.data||e.data.type!=="portfolioOpenSlug")return;
+  var slug=e.data.slug||"";
+  var idx=videos.findIndex(function(v){
+    var s=v.slug||(v.title||"").toLowerCase().replace(/[^a-z0-9\u0400-\u04ff\s-]/g,"").replace(/\s+/g,"-").replace(/-+/g,"-").replace(/^-|-$/g,"");
+    return s===slug;
+  });
+  if(idx!==-1)setTimeout(function(){expand(idx);},100);
+});
+var _plReady=false;
+var _pl=document.getElementById("pl-screen");
+if(_pl)_pl.style.opacity="0";
+sendHeight();
+(function(){
+  var done=false;
+  window.addEventListener("message",function h(e){
+    if(done||!e.data)return;
+    var vh=e.data.viewportH||(e.data.type==="portfolioViewportH"&&e.data.viewportH);
+    if(!vh)return;
+    done=true;window.removeEventListener("message",h);
+    if(_pl){
+      _pl.style.minHeight=vh+"px";
+      _pl.style.transition="opacity .3s ease";
+      _pl.style.opacity="1";
+    }
+    sendHeight();
+  });
+  setTimeout(function(){if(!done&&_pl){_pl.style.opacity="1";}},400);
+})();
+
+var hidden=false;
+function doHide(){
+  hidden=true;
+  var s=document.getElementById("pl-screen");
+  var g=document.getElementById("grid");
+  var flt=document.getElementById("filters");
+  if(s){
+    s.style.opacity="0";
+    setTimeout(function(){
+      if(s.parentNode)s.parentNode.removeChild(s);
+      if(g){g.style.height="auto";g.style.overflow="";g.style.visibility="visible";requestAnimationFrame(function(){g.style.opacity="1";});}
+      if(flt){flt.style.height="auto";flt.style.overflow="";flt.style.visibility="visible";requestAnimationFrame(function(){flt.style.opacity="1";});}
+      sendHeight();
+      setTimeout(sendHeight,700);
+    },450);
+  }
+}
+(function(){
+  var start=Date.now(),MIN=1200;
+  function tryHide(){
+    if(hidden)return;
+    var wait=Math.max(0,MIN-(Date.now()-start));
+    setTimeout(doHide,wait);
+  }
+  var imgs=Array.from(document.querySelectorAll(".grid .brick-img"));
+  var vids=Array.from(document.querySelectorAll(".grid .hover-video"));
+  var total=imgs.length+vids.length,done=0;
+  function tick(){done++;if(done>=total)tryHide();}
+  imgs.forEach(function(img){
+    if(img.complete&&img.naturalWidth>0){done++;}
+    else{img.addEventListener("load",tick);img.addEventListener("error",tick);}
+  });
+  vids.forEach(function(vid){
+    if(vid.readyState>=2){done++;}
+    else{vid.addEventListener("canplay",tick);vid.addEventListener("error",tick);}
+  });
+  if(done>=total)tryHide();
+  setTimeout(function(){if(!hidden)doHide();},6000);
+})();
+
+
+function sendHeight(){
+  var cs=document.getElementById("contact-screen");
+  var pg=document.getElementById("photo-grid");
+  var target;
+  if(photoMode&&pg&&pg.classList.contains("active"))target=pg;
+  else if(cs&&cs.classList.contains("active"))target=cs;
+  else target=document.getElementById("grid");
+  if(!target)return;
+  var rectBottom=Math.ceil(target.getBoundingClientRect().bottom+window.scrollY+6);
+  // Для photo grid дополнительно учитываем scrollHeight + offsetTop
+  // (getBoundingClientRect иногда отстаёт когда grid-row-end только что обновился)
+  var h=rectBottom;
+  if(photoMode&&target===pg){
+    var scrollH=target.offsetTop+target.scrollHeight+6;
+    if(scrollH>h)h=scrollH;
+  }
+  if(isReelMode()){
+    // Reel mode: pad bottom by ~half viewport so the last card can be snap-centered.
+    // Without this, maxScroll on the parent clamps the target and the last card lands at iframe bottom.
+    var vh=reelViewportH||lbViewportH||(window.innerHeight||700);
+    h+=Math.ceil(vh/2);
+  }
+  try{window.parent.postMessage({type:"portfolioHeight",height:h},"*");}catch(e){}
+}
+setTimeout(sendHeight,200);
+setTimeout(sendHeight,1500);
+</script>
